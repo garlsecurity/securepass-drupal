@@ -3,6 +3,8 @@
 use Securepass\Securepass;
 use Securepass\Exception\Exception as SecurepassException;
 
+include_once 'securepass.client.inc';
+
 /**
  * Implements hook_permission().
  */
@@ -14,7 +16,6 @@ function securepass_permission() {
     ),
   );
 }
-
 
 
 /**
@@ -101,34 +102,6 @@ function securepass_menu() {
   );
 
   return $items;
-}
-
-/**
- * Get Securepass client
- */
-function securepass_client() {
-  if ($config = _securepass_check_api()) {
-    try {
-      $client = new Securepass($config);
-      return $client;
-    }
-    catch (SecurepassException $e) {
-      drupal_set_message($e->getMessage(), 'error');
-    }
-  }
-}
-
-/**
- * Ping Securepass API
- */
-function securepass_api_ping() {
-  $client = securepass_client();
-  try {
-    return $client->ping();
-  }
-  catch (SecurepassException $e) {
-    drupal_set_message('Securepass: ' . $e->getMessage(), 'error');
-  }
 }
 
 

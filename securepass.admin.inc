@@ -3,30 +3,12 @@
 use Securepass\Securepass;
 
 /**
- * Check if API keys are correctly configured.
- *
- * @param boolean $verbose Print debug message
- */
-function _securepass_check_api($verbose = false) {
-  $app_id = variable_get('securepass_app_id', FALSE);
-  $app_secret = variable_get('securepass_app_secret', FALSE);
-  if ($app_id && $app_secret) {
-    $config = array('app_id'     => $app_id,
-                    'app_secret' => $app_secret);
-    return $config;
-  }
-  if ($verbose) {
-    drupal_set_message(t('Securepass API Keys are not configured, you can <a href="@url"> configure api keys by clicking here</a>',
-                       array('@url' => url('admin/config/system/securepass/api-keys'))), 'warning');
-  }
-}
-
-/**
  * @file
  * Administration page callbacks for the fbconnect module.
  */
 function securepass_api_keys_settings($form, &$form_state) {
   $status = securepass_api_ping();
+  //$status = $client->ping();
   $status_message = '<strong><small style="color: red;">' . t('Not connected') . '</small></strong>';
 
   if ($status) {
