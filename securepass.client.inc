@@ -42,12 +42,14 @@ function securepass_client() {
 /**
  * Ping Securepass API
  */
-function securepass_api_ping() {
+function securepass_api_ping($verbose = false) {
   try {
     $client = securepass_client();
     return $client->ping();
   }
   catch (Exception $e) {
-    drupal_set_message('Securepass: ' . $e->getMessage(), 'error');
+    if ($verbose) {
+      drupal_set_message('Securepass: ' . $e->getMessage(), 'error');
+    }
   }
 }

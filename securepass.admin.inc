@@ -8,7 +8,6 @@ use Securepass\Securepass;
  */
 function securepass_api_keys_settings($form, &$form_state) {
   $status = securepass_api_ping();
-  //$status = $client->ping();
   $status_message = '<strong><small style="color: red;">' . t('Not connected') . '</small></strong>';
 
   if ($status) {
@@ -40,15 +39,22 @@ function securepass_api_keys_settings($form, &$form_state) {
   return system_settings_form($form);
 }
 
-
+/**
+ * Authentication settings
+ */
 function securepass_authentication_settings($form, &$form_state) {
-  $enabled = _securepass_check_api(true) ?: false;
+  $active = securepass_api_ping() ?: false;
+
+  if (!$active) {
+    drupal_set_message(t('Securepass is not responding, authentication temporary disabled.'), 'error');
+  }
+
   $form['securepass_authentication'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Securepass authentication'),
     '#description' => t('Activating this option will override standard Drupal authentication using Securepass API to autenticate the users.'),
     '#default_value' => variable_get('securepass_authentication', FALSE),
-    '#disabled' => !$enabled
+    '#disabled' => !$active
   );
   return system_settings_form($form);
 }
