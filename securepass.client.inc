@@ -48,8 +48,10 @@ function securepass_api_ping($verbose = false) {
     return $client->ping();
   }
   catch (Exception $e) {
+    $error = $e->getMessage();
     if ($verbose) {
-      drupal_set_message('Securepass: ' . $e->getMessage(), 'error');
+      drupal_set_message('Securepass: ' . $error, 'error');
     }
+    return $error;
   }
 }

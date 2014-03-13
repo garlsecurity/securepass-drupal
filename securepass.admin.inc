@@ -8,10 +8,12 @@ use Securepass\Securepass;
  */
 function securepass_api_keys_settings($form, &$form_state) {
   $status = securepass_api_ping();
-  $status_message = '<strong><small style="color: red;">' . t('Not connected') . '</small></strong>';
 
-  if ($status) {
+  if (is_array($status)) {
     $status_message = '<strong><small style="color: green;">' . t('Connected') . '</small></strong>';
+  }
+  else {
+    $status_message = '<strong><small style="color: red;">' . $status . '</small></strong>';
   }
 
   $form['securepass_status'] = array(
@@ -46,7 +48,7 @@ function securepass_authentication_settings($form, &$form_state) {
   $active = securepass_api_ping() ?: false;
 
   if (!$active) {
-    drupal_set_message(t('Securepass is not responding, authentication temporary disabled.'), 'error');
+    drupal_set_message(t('Securepass is not responding or you are not authorized, authentication temporary disabled.'), 'error');
   }
 
   $form['securepass_authentication'] = array(

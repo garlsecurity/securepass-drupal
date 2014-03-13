@@ -79,7 +79,7 @@ function securepass_login_validate($form, &$form_state) {
     $password = $form_state['values']['pass'];
 
     try {
-      $client = securepass_client();
+      $client = securepass_client(true);
       $config = array(
         'username' => $username,
         'secret' => $password,
@@ -91,7 +91,7 @@ function securepass_login_validate($form, &$form_state) {
       }
     }
     catch (Exception $e) {
-      drupal_set_message(t($e->getMessage()));
+      drupal_set_message('Securepass: ' . t($e->getMessage()), 'error');
     }
 }
 
