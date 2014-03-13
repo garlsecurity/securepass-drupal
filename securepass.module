@@ -77,9 +77,12 @@ function securepass_login_validate($form, &$form_state) {
     global $user;
     $username = $form_state['values']['name'];
     $password = $form_state['values']['pass'];
-
     try {
-      $client = securepass_client(true);
+      // first check if api status is ok.
+      securepass_api_check_status();
+
+      // now go ahed with autentication
+      $client = securepass_client();
       $config = array(
         'username' => $username,
         'secret' => $password,
@@ -90,8 +93,8 @@ function securepass_login_validate($form, &$form_state) {
         $form_state['uid'] = $user->uid;
       }
     }
-    catch (Exception $e) {
-      drupal_set_message('Securepass: ' . t($e->getMessage()), 'error');
+    catch (SecurepassException $e) {
+      drupal_set_message('Securepass API error: ' . t($e->getMessage()), 'error');
     }
 }
 

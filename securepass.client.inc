@@ -31,7 +31,7 @@ function securepass_client() {
       $securepass = new Securepass($config);
       return $securepass;
     }
-    catch (Exception $e) {
+    catch (SecurepassException $e) {
       $error_message = $e->getMessage();
       drupal_set_message('Securepass: ' . $error_message, 'error');
       watchdog('securepass', 'Securepass error: @error', array('@error' => $error_message), WATCHDOG_ERROR);
@@ -42,12 +42,13 @@ function securepass_client() {
 /**
  * Ping Securepass API
  */
-function securepass_api_ping($verbose = false) {
+function securepass_api_check_status($verbose = false) {
   try {
     $client = securepass_client();
-    return $client->ping();
+    $client->ping();
+    return true;
   }
-  catch (Exception $e) {
+  catch (SecurepassException $e) {
     $error = $e->getMessage();
     if ($verbose) {
       drupal_set_message('Securepass: ' . $error, 'error');

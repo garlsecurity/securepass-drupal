@@ -7,13 +7,13 @@ use Securepass\Securepass;
  * Administration page callbacks for the fbconnect module.
  */
 function securepass_api_keys_settings($form, &$form_state) {
-  $status = securepass_api_ping();
+  $status = securepass_api_check_status();
 
-  if (is_array($status)) {
-    $status_message = '<strong><small style="color: green;">' . t('Connected') . '</small></strong>';
+  if ($status !== true) {
+    $status_message = '<strong><small style="color: red;">' . $status . '</small></strong>';
   }
   else {
-    $status_message = '<strong><small style="color: red;">' . $status . '</small></strong>';
+    $status_message = '<strong><small style="color: green;">' . t('Connected') . '</small></strong>';
   }
 
   $form['securepass_status'] = array(
