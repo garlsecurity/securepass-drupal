@@ -5,3 +5,4 @@ dependencies[] = composer_manager
 core = 7.x
 php = 5.3
 files[] = includes/securepass.client.inc
+files[] = Exceptions/SecurepassDrupalException.php

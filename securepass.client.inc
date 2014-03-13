@@ -8,7 +8,7 @@ use Securepass\Exception\Exception as SecurepassException;
  *
  * @param boolean $verbose Print debug message
  */
-function _securepass_check_api($verbose = false) {
+function securepass_get_configurations($verbose = false) {
   $app_id = variable_get('securepass_app_id', FALSE);
   $app_secret = variable_get('securepass_app_secret', FALSE);
   if ($app_id && $app_secret) {
@@ -26,15 +26,13 @@ function _securepass_check_api($verbose = false) {
  * Get Securepass client
  */
 function securepass_client() {
-  if ($config = _securepass_check_api()) {
+  if ($config = securepass_get_configurations()) {
     try {
       $securepass = new Securepass($config);
       return $securepass;
     }
     catch (\Exception $e) {
-      $error_message = $e->getMessage();
-      drupal_set_message('Securepass: ' . $error_message, 'error');
-      watchdog('securepass', 'Securepass error: @error', array('@error' => $error_message), WATCHDOG_ERROR);
+      securepass_api_log_error($e);
     }
   }
 }
@@ -42,17 +40,49 @@ function securepass_client() {
 /**
  * Ping Securepass API
  */
-function securepass_api_check_status($verbose = false) {
+function securepass_api_check_status() {
   try {
-    $client = securepass_client();
-    $client->ping();
+    securepass_api_execute('ping');
     return true;
   }
-  catch (SecurepassException $e) {
-    $error = $e->getMessage();
-    if ($verbose) {
-      drupal_set_message('Securepass: ' . $error, 'error');
+  catch (SecurepassDrupalException $e) {
+    return $e->getMessage();
+  }
+}
+
+function securepass_api_execute($method, $type = false, $params = array()) {
+  $debug = variable_get('securepass_debug', false);
+  try {
+    $client = securepass_client();
+    if (method_exists($client, $method)) {
+      // try to understand which method has been called, some methods does't have parameters (ex. ->ping())
+      $reflection = new ReflectionMethod($client, $method);
+      $method_params = $reflection->getParameters();
+      if (!count($method_params)) {
+        $res = $client->{$method}();
+      }
+      else {
+        $res = $client->{$method}($type, $params);
+      }
+      return $res;
     }
-    return $error;
+    else {
+      throw new InvalidArgumentException(t('This method not exists, please refer the documentation.'));
+    }
+  }
+  catch (Exception $e) {
+    securepass_api_log_error($e, $debug);
+    throw new SecurepassDrupalException($e->getMessage());
+  }
+}
+
+function securepass_api_log_error($exception, $verbose = false) {
+  $exception_class = get_class($exception);
+  $error_message = $exception->getMessage();
+  watchdog('securepass', 'Securepass API error: "@exception_class" - "@error"',
+            array('@exception_class' => $exception_class,
+                  '@error' => $error_message), WATCHDOG_ERROR);
+  if ($verbose) {
+    drupal_set_message('Securepass API error: ' . $error_message, 'error');
   }
 }
