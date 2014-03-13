@@ -85,7 +85,7 @@ function securepass_login_validate($form, &$form_state) {
       $client = securepass_client();
       $config = array(
         'username' => $username,
-        'secret' => $password,
+        'secret'   => $password,
       );
       $res = $client->user('auth', $config);
       if ($res['authenticated']) {
