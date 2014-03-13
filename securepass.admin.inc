@@ -45,9 +45,10 @@ function securepass_api_keys_settings($form, &$form_state) {
  * Authentication settings
  */
 function securepass_authentication_settings($form, &$form_state) {
-  $active = securepass_api_ping() ?: false;
+  $active = securepass_api_check_status() ?: false;
 
-  if (!$active) {
+  if ($active !== true) {
+    $disabled = true;
     drupal_set_message(t('Securepass is not responding or you are not authorized, authentication temporary disabled.'), 'error');
   }
 
@@ -56,7 +57,7 @@ function securepass_authentication_settings($form, &$form_state) {
     '#title' => t('Enable Securepass authentication'),
     '#description' => t('Activating this option will override standard Drupal authentication using Securepass API to autenticate the users.'),
     '#default_value' => variable_get('securepass_authentication', FALSE),
-    '#disabled' => !$active
+    '#disabled' => (isset($disabled) ? $disabled : false)
   );
   return system_settings_form($form);
 }
