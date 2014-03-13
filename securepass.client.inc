@@ -31,7 +31,7 @@ function securepass_client() {
       $securepass = new Securepass($config);
       return $securepass;
     }
-    catch (SecurepassException $e) {
+    catch (\Exception $e) {
       $error_message = $e->getMessage();
       drupal_set_message('Securepass: ' . $error_message, 'error');
       watchdog('securepass', 'Securepass error: @error', array('@error' => $error_message), WATCHDOG_ERROR);
