@@ -50,6 +50,66 @@ function securepass_menu() {
   return $items;
 }
 
+/**
+ * Implement hook_form_alter() to change the behaviour of the login form.
+ *
+ * Login validators are set in the user_login_default_validators() function in user.module.
+ * They are normally set to array('user_login_name_validate',
+ * 'user_login_authenticate_validate', 'user_login_final_validate').
+ * We simply replace 'user_login_authenticate_validate' with 'extauth_login_validate'.
+*/
+function securepass_form_user_login_alter(&$form, $form_state ) {
+  if (variable_get('securepass_authentication', false)) {
+    unset($form['links']);
+    $form['#validate'] = array('user_login_name_validate', 'securepass_login_validate', 'user_login_final_validate');
+  }
+}
+
+function securepass_form_user_login_block_alter(&$form, $form_state ) {
+    return securepass_form_user_login_alter($form, $form_state );
+}
+
+/**
+* The securepass_login_validate() function attempts to authenticate a user off the external system
+* using their e-mail address.
+*/
+function securepass_login_validate($form, &$form_state) {
+    global $user;
+    $username = $form_state['values']['name'];
+    $password = $form_state['values']['pass'];
+
+    try {
+      $client = securepass_client();
+      $config = array(
+        'username' => $username,
+        'secret' => $password,
+      );
+      $res = $client->user('auth', $config);
+      if ($res['authenticated']) {
+        user_external_login_register($username, 'securepass');
+        $form_state['uid'] = $user->uid;
+      }
+    }
+    catch (Exception $e) {
+      drupal_set_message(t($e->getMessage()));
+    }
+}
+
+/**
+ * Implements of hook_insert()
+ */
+function securepass_user_insert(&$edit, &$account, $category = null) {
+  if (variable_get('securepass_authentication', false)) {
+    if (empty($account->mail)) {
+      if (valid_email_address($account->name)) {
+        db_update('users')->fields(array('mail' => $account->name))
+                          ->condition('uid', $account->uid, '=')
+                          ->execute();
+      }
+    }
+  }
+}
+
 
 /**
  * Implements hook_help().
