@@ -104,14 +104,23 @@ function securepass_login_validate($form, &$form_state) {
 function securepass_user_insert(&$edit, &$account, $category = null) {
   if (variable_get('securepass_authentication', false)) {
     if (empty($account->mail)) {
-      if (valid_email_address($account->name)) {
-        db_update('users')->fields(array('mail' => $account->name))
-                          ->condition('uid', $account->uid, '=')
-                          ->execute();
+      try {
+        $client = securepass_client();
+        $info = $client->user('info', array('username' => $account->name));
+        if (valid_email_address($info['email'])) {
+          db_update('users')->fields(array('mail' => $info['email']))
+                            ->condition('uid', $account->uid, '=')
+                            ->execute();
+        }
+      }
+      catch (SecurepassException $e) {
+        drupal_set_message('Securepass API error: ' . t($e->getMessage()), 'error');
+        user_delete($account->uid);
       }
     }
   }
 }
+
 
 
 /**
