@@ -106,7 +106,7 @@ function securepass_user_insert(&$edit, &$account, $category = null) {
     if (empty($account->mail)) {
       try {
         $client = securepass_client();
-        $info = securepass_api_execute('user', 'auth', array('username' => $account->name));
+        $info = securepass_api_execute('user', 'info', array('username' => $account->name));
         if (valid_email_address($info['email'])) {
           db_update('users')->fields(array('mail' => $info['email']))
                             ->condition('uid', $account->uid, '=')
